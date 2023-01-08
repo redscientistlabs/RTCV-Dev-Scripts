@@ -14,7 +14,7 @@ function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
     for ($i = 0; $i -lt $repos.Count; $i++) {
         $repo = $repos[$i]
         if (-not $ValidRepos.Contains($repo)) {
-            Write-Host "Invalid repo: $repo" -ForegroundColor Red
+            Write-Host "Invalid repo: '$repo'. Skipping..." -ForegroundColor Yellow
             $repos.Remove($repo)
         }
     }

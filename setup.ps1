@@ -28,7 +28,7 @@ param (
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
 )
 
-Write-Host "Writing to $directory" -ForegroundColor Blue
+Write-Host "Writing to:`t$directory" -ForegroundColor Blue
 
 # PowerShell will use a stale version of the module by default. This makes development very tedious.
 # Without `-Force`, you need to reload your whole dev environment every time you want to make a change
@@ -37,6 +37,7 @@ Write-Host "Writing to $directory" -ForegroundColor Blue
 Import-Module ".\src\helpers.psm1" -Force
 
 Remove-InvalidRepos($repos)
+Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
 
 if ($silent) {
     # By default, checkout RTCV
