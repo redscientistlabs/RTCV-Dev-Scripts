@@ -1,3 +1,2 @@
-function ValidateRepos([System.Collections.ArrayList]$repos) {
-    $repos.Clear();
+function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
 }

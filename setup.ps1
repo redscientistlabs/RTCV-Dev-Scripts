@@ -28,11 +28,15 @@ param (
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
 )
 
-Import-Module "$PSScriptRoot\src\helpers.psm1"
-
 Write-Host "Writing to $directory" -ForegroundColor Blue
 
-ValidateRepos($repos)
+# PowerShell will use a stale version of the module by default. This makes development very tedious.
+# Without `-Force`, you need to reload your whole dev environment every time you want to make a change
+# to a module. It's insane that this is a real issue a language has in 2023. 😡
+# See https://github.com/PowerShell/PowerShell/issues/2505
+Import-Module ".\src\helpers.psm1" -Force
+
+Remove-InvalidRepos($repos)
 
 if ($silent) {
     # By default, checkout RTCV
