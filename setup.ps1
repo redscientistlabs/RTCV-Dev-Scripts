@@ -16,10 +16,11 @@ param (
     [string]$directory = (Split-Path $PSScriptRoot -Parent),
 
     [Parameter(HelpMessage = "Repos to clone")]
-    [string[]]$repos = @("RTCV"),
+    [System.Collections.ArrayList]$repos = @("RTCV"),
 
-    [Parameter(HelpMessage = "Run a restore and build upon cloning")]
-    [switch]$build = $false,
+    # TODO - Building on clone may be nice for some devs.
+    # [Parameter(HelpMessage = "Run a restore and build upon cloning")]
+    # [switch]$build = $false,
 
     # Swallow all remaining arguments. This avoid things like:
     #  .\setup.ps1 -repos RTCV dolphin-vanguard
@@ -27,8 +28,11 @@ param (
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
 )
 
+Import-Module "$PSScriptRoot\src\helpers.psm1"
 
 Write-Host "Writing to $directory" -ForegroundColor Blue
+
+ValidateRepos($repos)
 
 if ($silent) {
     # By default, checkout RTCV
