@@ -16,7 +16,7 @@ param (
     [string]$directory = (Split-Path $PSScriptRoot -Parent),
 
     [Parameter(HelpMessage = "Repos to clone")]
-    [System.Collections.ArrayList]$repos = @("RTCV"),
+    [System.Collections.ArrayList]$repos = @("RTCV", "BizHawk-Vanguard"),
 
     # TODO - Building on clone may be nice for some devs.
     # [Parameter(HelpMessage = "Run a restore and build upon cloning")]
