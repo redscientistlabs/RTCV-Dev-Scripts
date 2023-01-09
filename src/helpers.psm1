@@ -1,3 +1,5 @@
+using namespace System.Management.Automation.Host
+
 $ValidRepos = @{
     "BizHawk-Vanguard"      = "master";
     "dolphin-Vanguard"      = "Vanguard";
@@ -20,16 +22,29 @@ function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
     }
 }
 
-function Clone-Repo([string]$repo, [string]$directory) {
+function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
     $repoBaseUrl = 'git@github.com:redscientistlabs/';
     $repoUrl = $repoBaseUrl + $repo + '.git';
     $repoDirectory = $directory + '\' + $repo;
+    $branch = $ValidRepos[$repo];
     if (Test-Path $repoDirectory) {
-        Write-Host "Repo '$repo' already exists. Skipping..." -ForegroundColor Yellow
-        return
+        Write-Host "Repo '$repo' already exists." -ForegroundColor Yellow
+        if ($silent) {
+            Write-Host "Skipping..." -ForegroundColor Yellow
+            return
+        }
+
+        $answer = $Host.UI.PromptForChoice("$repo - Checkout branch '$branch' ?", "This may override local changes", @('&Yes', '&No'), 1)
+        if ($answer -ne 0) {
+            Write-Host "Skipping..." -ForegroundColor Yellow
+            return
+        }
     }
-    Write-Host "Cloning '$repo'..." -ForegroundColor Green
-    git clone $repoUrl $repoDirectory
-    Write-Host "Checking out '$($ValidRepos[$repo])'..." -ForegroundColor Green
-    git -C $repoDirectory checkout $ValidRepos[$repo]
+    else {
+        Write-Host "Cloning '$repo'..." -ForegroundColor Green
+        git clone $repoUrl $repoDirectory
+    }
+
+    Write-Host "Checking out '$($branch)'..." -ForegroundColor Green
+    git -C $repoDirectory checkout $branch
 }

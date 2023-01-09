@@ -9,9 +9,8 @@
 #>
 [CmdletBinding()]
 param (
-    # TODO - In the future, would be cool to have an interactive prompt to select repos to clone.
-    # [Parameter(HelpMessage = "Not interactive, install based on input flags")]
-    # [switch]$silent = $false,
+    [Parameter(HelpMessage = "Not interactive, install based on input flags")]
+    [switch]$silent = $false,
 
     [Parameter(HelpMessage = "Directory to clone repos to")]
     [string]$directory = (Split-Path $PSScriptRoot -Parent),
@@ -41,7 +40,7 @@ Remove-InvalidRepos($repos)
 Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
 foreach ($repo in $repos) {
     Write-Host "Cloning '$repo' into $directory" -ForegroundColor Green
-    Clone-Repo $repo $directory;
+    Clone-Repo $repo $directory $silent;
 }
 
 if ($silent) {
