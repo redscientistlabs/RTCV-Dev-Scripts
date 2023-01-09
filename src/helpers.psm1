@@ -19,3 +19,17 @@ function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
         }
     }
 }
+
+function Clone-Repo([string]$repo, [string]$directory) {
+    $repoBaseUrl = 'git@github.com:redscientistlabs/';
+    $repoUrl = $repoBaseUrl + $repo + '.git';
+    $repoDirectory = $directory + '\' + $repo;
+    if (Test-Path $repoDirectory) {
+        Write-Host "Repo '$repo' already exists. Skipping..." -ForegroundColor Yellow
+        return
+    }
+    Write-Host "Cloning '$repo'..." -ForegroundColor Green
+    git clone $repoUrl $repoDirectory
+    Write-Host "Checking out '$($ValidRepos[$repo])'..." -ForegroundColor Green
+    git -C $repoDirectory checkout $ValidRepos[$repo]
+}

@@ -9,8 +9,9 @@
 #>
 [CmdletBinding()]
 param (
-    [Parameter(HelpMessage = "Not interactive, install based on input flags")]
-    [switch]$silent = $false,
+    # TODO - In the future, would be cool to have an interactive prompt to select repos to clone.
+    # [Parameter(HelpMessage = "Not interactive, install based on input flags")]
+    # [switch]$silent = $false,
 
     [Parameter(HelpMessage = "Directory to clone repos to")]
     [string]$directory = (Split-Path $PSScriptRoot -Parent),
@@ -34,14 +35,15 @@ Write-Host "Writing to:`t$directory" -ForegroundColor Blue
 # Without `-Force`, you need to reload your whole dev environment every time you want to make a change
 # to a module. It's insane that this is a real issue a language has in 2023. 😡
 # See https://github.com/PowerShell/PowerShell/issues/2505
-Import-Module ".\src\helpers.psm1" -Force
+Import-Module ".\src\helpers.psm1" -Force -DisableNameChecking
 
 Remove-InvalidRepos($repos)
 Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
+foreach ($repo in $repos) {
+    Write-Host "Cloning '$repo' into $directory" -ForegroundColor Green
+    Clone-Repo $repo $directory;
+}
 
 if ($silent) {
     # By default, checkout RTCV
 }
-
-echo $repos
-echo $repos.Count
