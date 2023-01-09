@@ -18,6 +18,9 @@ param (
     [Parameter(HelpMessage = "Repos to clone")]
     [System.Collections.ArrayList]$repos = @("RTCV", "BizHawk-Vanguard"),
 
+    [Parameter(HelpMessage = "Clone all of the repos")]
+    [switch]$all = $false,
+
     # TODO - Building on clone may be nice for some devs.
     # [Parameter(HelpMessage = "Run a restore and build upon cloning")]
     # [switch]$build = $false,
@@ -36,13 +39,16 @@ Write-Host "Writing to:`t$directory" -ForegroundColor Blue
 # See https://github.com/PowerShell/PowerShell/issues/2505
 Import-Module ".\src\helpers.psm1" -Force -DisableNameChecking
 
-Remove-InvalidRepos($repos)
+if ($all) {
+    $repos = Get-AllRepos
+}
+else {
+    Remove-InvalidRepos($repos)
+}
+
 Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
 foreach ($repo in $repos) {
-    Write-Host "Cloning '$repo' into $directory" -ForegroundColor Green
     Clone-Repo $repo $directory $silent;
 }
 
-if ($silent) {
-    # By default, checkout RTCV
-}
+Write-Host "Done!" -ForegroundColor Green
