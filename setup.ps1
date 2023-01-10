@@ -1,12 +1,5 @@
-<#
-.SYNOPSIS
-    Setup script for RTCV
+using namespace System.Management.Automation.Host
 
-.DESCRIPTION
-    Run this script whenever you want to add repos to your RTCV setup. Example:
-
-    .\setup.ps1 -repos RTCV,dolphin-vanguard -directory C:\Code
-#>
 [CmdletBinding()]
 param (
     [Parameter(HelpMessage = "Not interactive, install based on input flags")]
@@ -16,7 +9,7 @@ param (
     [string]$directory = (Split-Path $PSScriptRoot -Parent),
 
     [Parameter(HelpMessage = "Repos to clone")]
-    [System.Collections.ArrayList]$repos = @("RTCV", "BizHawk-Vanguard"),
+    [string[]]$repos = @("RTCV", "BizHawk-Vanguard"),
 
     [Parameter(HelpMessage = "Clone all of the repos")]
     [switch]$all = $false,
@@ -31,24 +24,76 @@ param (
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
 )
 
-Write-Host "Writing to:`t$directory" -ForegroundColor Blue
+function Main () {
+    Write-Host "Writing to:`t$directory" -ForegroundColor Blue
 
-# PowerShell will use a stale version of the module by default. This makes development very tedious.
-# Without `-Force`, you need to reload your whole dev environment every time you want to make a change
-# to a module. It's insane that this is a real issue a language has in 2023. 😡
-# See https://github.com/PowerShell/PowerShell/issues/2505
-Import-Module ".\src\helpers.psm1" -Force -DisableNameChecking
+    if ($all) {
+        $repos = Get-AllRepos
+    }
+    else {
+        Remove-InvalidRepos($repos)
+    }
 
-if ($all) {
-    $repos = Get-AllRepos
-}
-else {
-    Remove-InvalidRepos($repos)
-}
+    Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
+    foreach ($repo in $repos) {
+        Clone-Repo $repo $directory $silent;
+    }
 
-Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
-foreach ($repo in $repos) {
-    Clone-Repo $repo $directory $silent;
+    Write-Host "Done!" -ForegroundColor Green
 }
 
-Write-Host "Done!" -ForegroundColor Green
+$ValidRepos = @{
+    "BizHawk-Vanguard"      = "master";
+    "dolphin-Vanguard"      = "Vanguard";
+    "FileStubTemplate-Cemu" = "main";
+    "FileStub-Vanguard"     = "master";
+    "melonDS-Vanguard"      = "Vanguard";
+    "pcsx2-Vanguard"        = "Vanguard";
+    "ProcessStub-Vanguard"  = "master";
+    "RTCV"                  = "51X";
+    "xemu-Vanguard"         = "master";
+}
+
+function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
+    for ($i = 0; $i -lt $repos.Count; $i++) {
+        $repo = $repos[$i]
+        if (-not $ValidRepos.Contains($repo)) {
+            Write-Host "Invalid repo: '$repo'. Skipping..." -ForegroundColor Yellow
+            $repos.Remove($repo)
+        }
+    }
+}
+
+function Get-AllRepos() {
+    return $ValidRepos.Keys
+}
+
+function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
+    $repoBaseUrl = 'git@github.com:redscientistlabs/';
+    $repoUrl = $repoBaseUrl + $repo + '.git';
+    $repoDirectory = $directory + '\' + $repo;
+    $branch = $ValidRepos[$repo];
+    if (Test-Path $repoDirectory) {
+        Write-Host "Repo '$repo' already exists locally." -ForegroundColor Yellow
+        if ($silent) {
+            Write-Host "Skipping..." -ForegroundColor Yellow
+            return
+        }
+
+        $answer = $Host.UI.PromptForChoice("Checkout branch '$branch' in repo '$repo'?", "This may override local changes", @('&Yes', '&No'), 1)
+        if ($answer -ne 0) {
+            Write-Host "Skipping..." -ForegroundColor Blue
+            return
+        }
+    }
+    else {
+        Write-Host "Cloning '$repo' into $repoDirectory" -ForegroundColor Blue
+        git clone $repoUrl $repoDirectory
+    }
+
+    Write-Host "Checking out '$($branch)'..." -ForegroundColor Blue
+    git -C $repoDirectory checkout $branch
+    git pull
+}
+
+Main
