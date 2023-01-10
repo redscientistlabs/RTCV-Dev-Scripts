@@ -110,7 +110,7 @@ function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
     }
     else {
         Write-Host "Cloning '$repo' into $repoDirectory" -ForegroundColor Blue
-        git clone $repoUrl $repoDirectory
+        git clone --recursive $repoUrl $repoDirectory
     }
 
     Write-Host "Checking out '$($branch)'..." -ForegroundColor Blue
