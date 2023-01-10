@@ -1,21 +1,27 @@
+<#
+.SYNOPSIS
+    RTCV Dev setup
+
+.DESCRIPTION
+    Set up a developer environment for RTCV.
+#>
+
 using namespace System.Management.Automation.Host
 
 [CmdletBinding()]
 param (
-    [Parameter(HelpMessage = "Not interactive, install based on input flags")]
+    # Not interactive, install based on input flags
     [switch]$silent = $false,
 
-    [Parameter(HelpMessage = "Directory to clone repos to")]
+    # Directory to clone repos to
     [string]$directory = (Split-Path $PSScriptRoot -Parent),
 
-    [Parameter(HelpMessage = "Repos to clone")]
+    # Repos to clone
     [string[]]$repos = @("RTCV", "BizHawk-Vanguard"),
 
-    [Parameter(HelpMessage = "Clone all of the repos")]
+    # Clone all of the repos
     [switch]$all = $false,
-
     # TODO - Building on clone may be nice for some devs.
-    # [Parameter(HelpMessage = "Run a restore and build upon cloning")]
     # [switch]$build = $false,
 
     # Swallow all remaining arguments. This avoid things like:
@@ -25,6 +31,8 @@ param (
 )
 
 function Main () {
+    Test-Prerequisites
+
     Write-Host "Writing to:`t$directory" -ForegroundColor Blue
 
     if ($all) {
@@ -52,6 +60,20 @@ $ValidRepos = @{
     "ProcessStub-Vanguard"  = "master";
     "RTCV"                  = "51X";
     "xemu-Vanguard"         = "master";
+}
+
+function Test-Prerequisites {
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        Write-Host "Git is not installed. Please install it and try again." -ForegroundColor Red
+        exit 1
+    }
+
+    # Show notification to change execution policy
+    $allowedExecutionPolicy = @('Unrestricted', 'RemoteSigned', 'ByPass')
+    if ((Get-ExecutionPolicy).ToString() -notin $allowedExecutionPolicy) {
+        Write-Host "PowerShell requires an execution policy in [$($allowedExecutionPolicy -join ", ")] to run this script. For example, to set the execution policy to 'RemoteSigned' please run 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser'."  -ForegroundColor Red
+        exit 1
+    }
 }
 
 function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
