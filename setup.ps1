@@ -10,6 +10,24 @@ using namespace System.Management.Automation.Host
 
 [CmdletBinding()]
 param (
+    # Not interactive, install based on input flags
+    [switch]$silent = $false,
+
+    # Directory to clone repos to
+    [string]$directory = (Split-Path $PSScriptRoot -Parent),
+
+    # Repos to clone
+    [string[]]$repos = @("RTCV", "BizHawk-Vanguard"),
+
+    # Clone all of the repos
+    [switch]$all = $false
+    # TODO - Building on clone may be nice for some devs.
+    # [switch]$build = $false,
+
+    # Swallow all remaining arguments. This avoid things like:
+    #  .\setup.ps1 -repos RTCV dolphin-vanguard
+    # From assigning "dolphin-vanguard" to the "directory" parameter. Powershell :(
+    # [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
 )
 
 function Main () {
