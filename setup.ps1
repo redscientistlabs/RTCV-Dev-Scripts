@@ -17,7 +17,7 @@ param (
     [string]$directory = $(if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { $pwd }),
 
     # Repos to clone
-    [string[]]$repos = @("RTCV", "BizHawk-Vanguard"),
+    [string[]]$repos = @(),
 
     # Clone all of the repos
     [switch]$all = $false,
@@ -38,8 +38,14 @@ function Main () {
     if ($all) {
         $repos = Get-AllRepos
     }
-    else {
+    elseif ($repos.Count -ne 0) {
         Remove-InvalidRepos($repos)
+    }
+    else {
+        $repos = Prompt-UserForRepos
+
+        echo "after prompt"
+        echo $repos
     }
 
     Write-Host "Cloning repos:`t$($repos -Join ', ')" -ForegroundColor Blue
@@ -85,6 +91,11 @@ function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
             $repos.Remove($repo)
         }
     }
+}
+
+function Prompt-UserForRepos {
+    $result = $ValidRepos.Keys | Out-GridView -OutputMode Multiple
+    return $result
 }
 
 function Get-AllRepos() {
