@@ -59,7 +59,8 @@ $ValidRepos = @{
     "pcsx2-Vanguard"        = "Vanguard";
     "ProcessStub-Vanguard"  = "master";
     "RTCV"                  = "51X";
-    "xemu-Vanguard"         = "master";
+    # xemu is a prototype that needs more work and is dependent on RTCVDLLHOOK
+    # "xemu-Vanguard"         = "master";
 }
 
 function Test-Prerequisites {
