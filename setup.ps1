@@ -14,7 +14,7 @@ param (
     [switch]$silent = $false,
 
     # Directory to clone repos to
-    [string]$directory = (Split-Path $PSScriptRoot -Parent),
+    [string]$directory = $(if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { Split-Path $MyInvocation.MyCommand.Path }),
 
     # Repos to clone
     [string[]]$repos = @("RTCV", "BizHawk-Vanguard"),
