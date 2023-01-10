@@ -26,7 +26,7 @@ param (
 
     # Swallow all remaining arguments. This avoid things like:
     #  .\setup.ps1 -repos RTCV dolphin-vanguard
-    # From assigning "dolphin-vanguard" to the "directory" parameter. Powershell 😡
+    # From assigning "dolphin-vanguard" to the "directory" parameter. Powershell :(
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
 )
 
