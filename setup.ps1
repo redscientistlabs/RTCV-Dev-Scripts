@@ -24,7 +24,7 @@ param (
     # TODO - Building on clone may be nice for some devs.
     # [switch]$build = $false,
 
-    # Swallow all remaining arguments. This avoid things like:
+    # Swallow all remaining arguments. This avoids commands like:
     #  .\setup.ps1 -repos RTCV dolphin-vanguard
     # From assigning "dolphin-vanguard" to the "directory" parameter. Powershell 😡
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)] $extraArgs
