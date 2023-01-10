@@ -114,9 +114,9 @@ function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
         git clone --recursive $repoUrl $repoDirectory
     }
 
-    Write-Host "Checking out '$($branch)'..." -ForegroundColor Blue
+    Write-Host "Updating $repo to '$($branch)'..." -ForegroundColor Blue
     git -C $repoDirectory checkout $branch
-    git pull
+    git -C $repoDirectory pull
 }
 
 Main
