@@ -19,6 +19,9 @@ param (
     # Repos to clone
     [string[]]$repos = @(),
 
+    # Name of the mega-solution file to generate in the root folder
+    [string]$solutionFileName = "RTCV-Suite.sln",
+
     # Clone all of the repos
     [switch]$all = $false,
     # TODO - Building on clone may be nice for some devs.
@@ -50,7 +53,9 @@ function Main () {
         Get-HorizontalLine
         Clone-Repo $repo $directory $silent;
     }
+    Get-HorizontalLine
 
+    Merge-Solutions $directory $solutionFileName
     Get-HorizontalLine
     Write-Host "Done!" -ForegroundColor Green
 }
@@ -63,18 +68,36 @@ class Repo {
 
 $ValidRepos = @(
     [Repo]@{Name = "BizHawk-Vanguard"; Branch = "master"; slnPath = "BizHawk.sln" }
-    [Repo]@{Name = "dolphin-Vanguard"; Branch = "Vanguard"; slnPath = "Source/dolphin-emu.sln" }
+    [Repo]@{Name = "dolphin-Vanguard"; Branch = "Vanguard"; slnPath = "Source\dolphin-emu.sln" }
     [Repo]@{Name = "FileStubTemplate-Cemu"; Branch = "main"; slnPath = "Plugin.sln" }
     [Repo]@{Name = "FileStub-Vanguard"; Branch = "master"; slnPath = "FileStub-Vanguard.sln" }
     # melonDS doesn't have a solution file, must be generated using cmake
     # I would include instructions on how to generate the solution, but I can't build melonDS-Vanguard locally
-    [Repo]@{Name = "melonDS-Vanguard"; Branch = "Vanguard"; slnPath = "" }
+    # For now, I'm putting in a bogus sln file so the rest of the script doesn't break.
+    [Repo]@{Name = "melonDS-Vanguard"; Branch = "Vanguard"; slnPath = "TODO.sln" }
     [Repo]@{Name = "pcsx2-Vanguard"; Branch = "Vanguard"; slnPath = "PCSX2_suite.sln" }
     [Repo]@{Name = "ProcessStub-Vanguard"; Branch = "master"; slnPath = "ProcessStub-Vanguard.sln" }
     [Repo]@{Name = "RTCV"; Branch = "51X"; slnPath = "RTCV.sln" }
     # xemu is a prototype that needs more work and is dependent on RTCVDLLHOOK
     # [Repo]@{Name =  "xemu-Vanguard"; Branch = "master"; slnPath = "xemu-Vanguard.sln"
 )
+
+function Merge-Solutions([string]$directory, [string]$solutionFileName) {
+    # Download the executable for use
+    $mergeSolutionsUrl = 'https://github.com/scowalt/merge-solutions/releases/download/test-release3/merge-solutions.exe'
+    $mergeSolutionsPath = "$env:TMP\merge-solutions.exe"
+    if (-not (Test-Path $mergeSolutionsPath)) {
+        Write-Host "Downloading merge-solutions.exe..." -ForegroundColor Blue
+        Invoke-WebRequest -Uri $mergeSolutionsUrl -OutFile $mergeSolutionsPath
+    }
+
+    $solutionFiles = ($ValidRepos | ForEach-Object { Join-Path $directory "$($_.Name)\$($_.slnPath)" } | Where-Object { Test-Path $_ })
+
+    Write-Host "Calling merge-solutions.exe" -ForegroundColor Blue
+    Invoke-Expression "& '$mergeSolutionsPath' /out $(Join-Path $directory $solutionFileName) $([String]::Join(' ', $solutionFiles))"
+
+    # TODO: Set up a nuget.config file so that packages will restore correctly
+}
 
 function Test-Prerequisites {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
