@@ -16,7 +16,7 @@ param (
     # Directory to clone repos to
     [string]$directory = $(if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { $pwd }),
 
-    # Repos to clone. Example: setup.ps1 -repos RTCV,Bizhawk-Vanguard
+    # Repos to clone. Example: setup.ps1 -repos RTCV,BizHawk-Vanguard
     [string[]]$repos = @(),
 
     # Name of the mega-solution file to generate in the root folder
@@ -49,7 +49,7 @@ function Main () {
         $repos = Get-AllRepos
     }
     elseif ($repos.Count -ne 0) {
-        Remove-InvalidRepos($repos)
+        $repos = Remove-InvalidRepos($repos)
     }
     else {
         $repos = Prompt-UserForRepos
@@ -137,13 +137,18 @@ function Test-Prerequisites {
 }
 
 function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
+    $output = @()
     for ($i = 0; $i -lt $repos.Count; $i++) {
         $repo = $repos[$i]
-        if (-not $ValidRepos.Name.Contains($repo)) {
+        if (-not ($ValidRepos.Name -contains $repo)) {
             Write-Host "Invalid repo: '$repo'. Skipping..." -ForegroundColor Yellow
-            $repos.Remove($repo)
+        }
+        else {
+            $output += $repo
         }
     }
+
+    return $output
 }
 
 function Prompt-UserForRepos {
