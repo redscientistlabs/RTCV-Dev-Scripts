@@ -168,7 +168,7 @@ function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
     $repoDirectory = $directory + '\' + $repo;
     $branch = ($ValidRepos | Where-Object -FilterScript { $_.Name -eq $repo }).Branch
     if (Test-Path $repoDirectory) {
-        Write-Host "Repo '$repo' already exists locally." -ForegroundColor Yellow
+        Write-Host "Repo '$repo' already exists locally at $repoDirectory." -ForegroundColor Yellow
         if ($silent) {
             Write-Host "Skipping..." -ForegroundColor Yellow
             return
