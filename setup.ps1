@@ -24,6 +24,10 @@ param (
 
     # Clone all of the repos
     [switch]$all = $false,
+
+    # Don't create a mega-solution file
+    [switch]$noSolution = $false,
+
     # TODO - Building on clone may be nice for some devs.
     # [switch]$build = $false,
 
@@ -55,8 +59,10 @@ function Main () {
     }
     Get-HorizontalLine
 
-    Merge-Solutions $directory $solutionFileName
-    Get-HorizontalLine
+    if (-not $noSolution) {
+        Merge-Solutions $directory $solutionFileName
+        Get-HorizontalLine
+    }
     Write-Host "Done!" -ForegroundColor Green
 }
 
@@ -82,8 +88,19 @@ $ValidRepos = @(
     # [Repo]@{Name =  "xemu-Vanguard"; Branch = "master"; slnPath = "xemu-Vanguard.sln"
 )
 
+# TODO - In the future, we should be smart about merging the existing `nuget.config` files in each repo
+$NugetConfigContent = @'
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>
+'@
+
 function Merge-Solutions([string]$directory, [string]$solutionFileName) {
     # Download the executable for use
+    # TODO - We should probably migrate `merge-solutions.exe` to the RedScientistLab org
     $mergeSolutionsUrl = 'https://github.com/scowalt/merge-solutions/releases/download/test-release3/merge-solutions.exe'
     $mergeSolutionsPath = "$env:TMP\merge-solutions.exe"
     if (-not (Test-Path $mergeSolutionsPath)) {
@@ -96,7 +113,10 @@ function Merge-Solutions([string]$directory, [string]$solutionFileName) {
     Write-Host "Calling merge-solutions.exe" -ForegroundColor Blue
     Invoke-Expression "& '$mergeSolutionsPath' /out $(Join-Path $directory $solutionFileName) $([String]::Join(' ', $solutionFiles))"
 
-    # TODO: Set up a nuget.config file so that packages will restore correctly
+    # Packages in the merged solution file may not restore correctly without a local `nuget.config` file
+    $nugetConfigPath = Join-Path $directory "nuget.config"
+    Write-Host "Writing nuget.config" -ForegroundColor Blue
+    $NugetConfigContent | Out-File $nugetConfigPath -Encoding ASCII
 }
 
 function Test-Prerequisites {
