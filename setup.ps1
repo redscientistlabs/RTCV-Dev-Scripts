@@ -16,7 +16,7 @@ param (
     # Directory to clone repos to
     [string]$directory = $(if ($PSScriptRoot) { Split-Path $PSScriptRoot -Parent } else { $pwd }),
 
-    # Repos to clone
+    # Repos to clone. Example: setup.ps1 -repos RTCV,Bizhawk-Vanguard
     [string[]]$repos = @(),
 
     # Name of the mega-solution file to generate in the root folder
@@ -27,6 +27,9 @@ param (
 
     # Don't create a mega-solution file
     [switch]$noSolution = $false,
+
+    # Clone with HTTPS instead of SSH
+    [switch]$https = $false,
 
     # TODO - Building on clone may be nice for some devs.
     # [switch]$build = $false,
@@ -155,7 +158,7 @@ function Get-AllRepos() {
 }
 
 function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
-    $repoBaseUrl = 'git@github.com:redscientistlabs/';
+    $repoBaseUrl = if ($https) { 'https://github.com/redscientistlabs/' } else { 'git@github.com:redscientistlabs/' };
     $repoUrl = $repoBaseUrl + $repo + '.git';
     $repoDirectory = $directory + '\' + $repo;
     $branch = ($ValidRepos | Where-Object -FilterScript { $_.Name -eq $repo }).Branch
