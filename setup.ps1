@@ -55,18 +55,26 @@ function Main () {
     Write-Host "Done!" -ForegroundColor Green
 }
 
-$ValidRepos = @{
-    "BizHawk-Vanguard"      = "master";
-    "dolphin-Vanguard"      = "Vanguard";
-    "FileStubTemplate-Cemu" = "main";
-    "FileStub-Vanguard"     = "master";
-    "melonDS-Vanguard"      = "Vanguard";
-    "pcsx2-Vanguard"        = "Vanguard";
-    "ProcessStub-Vanguard"  = "master";
-    "RTCV"                  = "51X";
-    # xemu is a prototype that needs more work and is dependent on RTCVDLLHOOK
-    # "xemu-Vanguard"         = "master";
+class Repo {
+    [string]$Name
+    [string]$Branch
+    [string]$slnPath
 }
+
+$ValidRepos = @(
+    [Repo]@{Name = "BizHawk-Vanguard"; Branch = "master"; slnPath = "BizHawk.sln" }
+    [Repo]@{Name = "dolphin-Vanguard"; Branch = "Vanguard"; slnPath = "Source/dolphin-emu.sln" }
+    [Repo]@{Name = "FileStubTemplate-Cemu"; Branch = "main"; slnPath = "Plugin.sln" }
+    [Repo]@{Name = "FileStub-Vanguard"; Branch = "master"; slnPath = "FileStub-Vanguard.sln" }
+    # melonDS doesn't have a solution file, must be generated using cmake
+    # I would include instructions on how to generate the solution, but I can't build melonDS-Vanguard locally
+    [Repo]@{Name = "melonDS-Vanguard"; Branch = "Vanguard"; slnPath = "" }
+    [Repo]@{Name = "pcsx2-Vanguard"; Branch = "Vanguard"; slnPath = "PCSX2_suite.sln" }
+    [Repo]@{Name = "ProcessStub-Vanguard"; Branch = "master"; slnPath = "ProcessStub-Vanguard.sln" }
+    [Repo]@{Name = "RTCV"; Branch = "51X"; slnPath = "RTCV.sln" }
+    # xemu is a prototype that needs more work and is dependent on RTCVDLLHOOK
+    # [Repo]@{Name =  "xemu-Vanguard"; Branch = "master"; slnPath = "xemu-Vanguard.sln"
+)
 
 function Test-Prerequisites {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
@@ -85,7 +93,7 @@ function Test-Prerequisites {
 function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
     for ($i = 0; $i -lt $repos.Count; $i++) {
         $repo = $repos[$i]
-        if (-not $ValidRepos.Contains($repo)) {
+        if (-not $ValidRepos.Name.Contains($repo)) {
             Write-Host "Invalid repo: '$repo'. Skipping..." -ForegroundColor Yellow
             $repos.Remove($repo)
         }
@@ -93,22 +101,21 @@ function Remove-InvalidRepos([System.Collections.ArrayList]$repos) {
 }
 
 function Prompt-UserForRepos {
-    # $result = $ValidRepos.Keys | Out-GridView -OutputMode Multiple
-    $options = $ValidRepos.Keys | ForEach-Object { $_ }
+    $options = $ValidRepos.Name | ForEach-Object { $_ }
     Write-Host "Select repos to clone:" -ForegroundColor Blue
     Show-Menu $options -MultiSelect
     return @()
 }
 
 function Get-AllRepos() {
-    return $ValidRepos.Keys
+    return $ValidRepos.Name
 }
 
 function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
     $repoBaseUrl = 'git@github.com:redscientistlabs/';
     $repoUrl = $repoBaseUrl + $repo + '.git';
     $repoDirectory = $directory + '\' + $repo;
-    $branch = $ValidRepos[$repo];
+    $branch = ($ValidRepos | Where-Object -FilterScript { $_.Name -eq $repo }).Branch
     if (Test-Path $repoDirectory) {
         Write-Host "Repo '$repo' already exists locally." -ForegroundColor Yellow
         if ($silent) {
