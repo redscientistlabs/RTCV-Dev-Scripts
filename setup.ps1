@@ -111,7 +111,7 @@ function Merge-Solutions([string]$directory, [string]$solutionFileName) {
         Invoke-WebRequest -Uri $mergeSolutionsUrl -OutFile $mergeSolutionsPath
     }
 
-    $solutionFiles = ($ValidRepos | ForEach-Object { Join-Path $directory "$($_.Name)\$($_.slnPath)" } | Where-Object { Test-Path $_ })
+    $solutionFiles = ($ValidRepos | ForEach-Object { Join-Path $directory "$($_.Name)\$($_.slnPath)" } | Where-Object { if (Test-Path $_) { return $true } else { Write-Host "Couldn't find $_" -ForegroundColor Yellow; return $false; } })
 
     Write-Host "Calling merge-solutions.exe" -ForegroundColor Blue
     Invoke-Expression "& '$mergeSolutionsPath' /out $(Join-Path $directory $solutionFileName) $([String]::Join(' ', $solutionFiles))"
