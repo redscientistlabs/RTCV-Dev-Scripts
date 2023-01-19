@@ -31,8 +31,6 @@ param (
     # Clone with HTTPS instead of SSH
     [switch]$https = $false,
 
-    [switch]$force = $false,
-
     # TODO - Building on clone may be nice for some devs.
     # [switch]$build = $false,
 
@@ -169,7 +167,7 @@ function Clone-Repo([string]$repo, [string]$directory, [bool]$silent) {
     $repoUrl = $repoBaseUrl + $repo + '.git';
     $repoDirectory = $directory + '\' + $repo;
     $branch = ($ValidRepos | Where-Object -FilterScript { $_.Name -eq $repo }).Branch
-    if ((-not $force) -and (Test-Path $repoDirectory)) {
+    if (Test-Path $repoDirectory) {
         Write-Host "Repo '$repo' already exists locally." -ForegroundColor Yellow
         if ($silent) {
             Write-Host "Skipping..." -ForegroundColor Yellow
